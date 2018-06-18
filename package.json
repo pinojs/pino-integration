@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "NODE_OPTIONS='-r qodaa' node setup.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "author": "David Mark Clements <david.clements@nearform.com>",
+  "license": "MIT"
 }
