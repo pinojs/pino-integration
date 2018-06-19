@@ -85,8 +85,8 @@ async function check (name, url) {
     if (fileInstall === false) {
       console.error(`Fail: ${name} could not link/install from pino ${branch}!`)
       process.exitCode = 1
+      return
     }
-    return
   }
   console.log(`${name} linked to pino ${branch} running tests to check integration`)
   const integration = spawn('npm', ['test'], {cwd: join(REPOS, name), stdio: 'ignore'})
