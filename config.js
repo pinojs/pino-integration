@@ -26,10 +26,6 @@ const peers =  [
     url: 'https://github.com/pinojs/pino-elasticsearch'
   },
   {
-    name: 'pino-txrx',
-    url: 'https://github.com/pinojs/pino-txrx'
-  },
-  {
     name: 'restify-pino-logger',
     url: 'https://github.com/pinojs/restify-pino-logger'
   },
