@@ -55,7 +55,7 @@ async function check (name, url) {
     console.error(`Fail: ${name} failed current test!`)
     process.exitCode = 1
   } else results[name].current = true
-  console.log(`${name} current tests passed, attempt switch to equivalent branch`)
+  console.log(`${name} attempt switch to equivalent branch`)
   const checkout = await spawn('git', ['checkout', branch], {cwd: join(REPOS, name), stdio: 'ignore'})
   await once(checkout, 'close')
   const repoBranch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
@@ -75,14 +75,20 @@ async function check (name, url) {
     process.exitCode = 1
     return
   }
-  console.log(`${name} dependencies reinstalled, running integration tests`)
+  console.log(`${name} dependencies reinstalled, linking pino ${branch}`)
   const link = spawn('npm', ['link', join(REPOS, 'pino')], {cwd: join(REPOS, name), stdio: 'ignore'})
   const linked = await once(link, 'close') === 0
   if (linked === false) {
-    console.error(`Fail: ${name} could not link pino from pino ${branch}!`)
-    process.exitCode = 1
+    console.log(`${name} linking to pino ${branch} failed, attemping file ref install`)
+    const fileInstall = spawn('npm', ['install', join(REPOS, 'pino')], {cwd: join(REPOS, name), stdio: 'ignore'})
+    const fileInstalled = await once(fileInstall, 'close') === 0
+    if (fileInstall === false) {
+      console.error(`Fail: ${name} could not link/install from pino ${branch}!`)
+      process.exitCode = 1
+    }
     return
   }
+  console.log(`${name} linked to pino ${branch} running tests to check integration`)
   const integration = spawn('npm', ['test'], {cwd: join(REPOS, name), stdio: 'ignore'})
   const integrated = await once(integration, 'close') === 0
   if (integrated === false) {
@@ -91,7 +97,7 @@ async function check (name, url) {
     return
   }
   results[name].branch = true
-  console.log(`Success: ${name} passed integration tests`)
+  console.log(`Success: ${name} passed integration test`)
 }
 
 function once (emitter, name) {
