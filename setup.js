@@ -2,7 +2,7 @@
 const { join } = require('path')
 const { mkdirSync } = require('fs')
 const { execSync, spawn } = require('child_process')
-const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
+const branch = process.env.TRAVIS_BRANCH || execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
 const { print } = require('easy-table')
 const { pino, peers } = require('./config')
 const REPOS = join(__dirname, 'repos')
