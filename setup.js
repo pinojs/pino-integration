@@ -76,10 +76,10 @@ async function check (name, url) {
     return
   }
   console.log(`${name} dependencies reinstalled, running integration tests`)
-  const link = spawn('npm', ['install', join(REPOS, 'pino')], {cwd: join(REPOS, name), stdio: 'ignore'})
+  const link = spawn('npm', ['link', join(REPOS, 'pino')], {cwd: join(REPOS, name), stdio: 'ignore'})
   const linked = await once(link, 'close') === 0
   if (linked === false) {
-    console.error(`Fail: ${name} could not install pino from ${branch}!`)
+    console.error(`Fail: ${name} could not link pino from pino ${branch}!`)
     process.exitCode = 1
     return
   }
