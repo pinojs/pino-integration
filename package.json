@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "NODE_OPTIONS='-r qodaa' node setup.js"
+    "start": "NODE_OPTIONS='-r qodaa' node start.js"
   },
   "keywords": [],
   "author": "David Mark Clements <david.clements@nearform.com>",
