@@ -60,22 +60,26 @@ async function check (name, url) {
   await once(checkout, 'close')
   const repoBranch = execSync('git rev-parse --abbrev-ref HEAD', {cwd: join(REPOS, name)}).toString().trim()
   results[name].compare = `pino ${branch} <–> ${name} ${repoBranch} `
-  console.log(`${name} is on ${repoBranch}, reinstalling dependencies`)
-  const removeModules = spawn('rm', ['-fr', 'node_modules'], {cwd: join(REPOS, name), stdio: 'ignore'})
-  const modulesRemoved = await once(removeModules, 'close') === 0
-  if (modulesRemoved === false) {
-    console.error(`Fail: ${name} unable to reinstall dependencies for ${repoBranch}, could not remove node_modules`)
-    process.exitCode = 1
-    return
-  } 
-  const reinstall = spawn('npm', ['install'], {cwd: join(REPOS, name), stdio: 'ignore'})
-  const reinstalled = await once(reinstall, 'close') === 0
-  if (reinstalled === false) {
-    console.error(`Fail: ${name} unable to reinstall dependencies for ${repoBranch}`)
-    process.exitCode = 1
-    return
+  if (repoBranch !== 'master') {
+    console.log(`${name} is on ${repoBranch}, reinstalling dependencies`)
+    const removeModules = spawn('rm', ['-fr', 'node_modules'], {cwd: join(REPOS, name), stdio: 'ignore'})
+    const modulesRemoved = await once(removeModules, 'close') === 0
+    if (modulesRemoved === false) {
+      console.error(`Fail: ${name} unable to reinstall dependencies for ${repoBranch}, could not remove node_modules`)
+      process.exitCode = 1
+      return
+    }
+    const reinstall = spawn('npm', ['install'], {cwd: join(REPOS, name), stdio: 'ignore'})
+    const reinstalled = await once(reinstall, 'close') === 0
+    if (reinstalled === false) {
+      console.error(`Fail: ${name} unable to reinstall dependencies for ${repoBranch}`)
+      process.exitCode = 1
+      return
+    }
+    console.log(`${name} dependencies reinstalled, linking pino ${branch}`)
+  } else {
+    console.log(`${name} is on ${repoBranch}, linking pino ${branch}`)
   }
-  console.log(`${name} dependencies reinstalled, linking pino ${branch}`)
   const link = spawnSync('npm', ['link', join(REPOS, 'pino')], {cwd: join(REPOS, name), stdio: 'ignore'})
   const linked = link.status === 0
   if (linked === false) {
