@@ -1,7 +1,7 @@
 'use strict'
 const { join } = require('path')
 const { mkdirSync } = require('fs')
-const { execSync, spawn } = require('child_process')
+const { execSync, spawn, spawnSync } = require('child_process')
 const branch = process.env.TRAVIS_BRANCH || execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
 const { print } = require('easy-table')
 const { pino, peers } = require('./config')
@@ -58,7 +58,7 @@ async function check (name, url) {
   console.log(`${name} attempt switch to equivalent branch`)
   const checkout = await spawn('git', ['checkout', branch], {cwd: join(REPOS, name), stdio: 'ignore'})
   await once(checkout, 'close')
-  const repoBranch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
+  const repoBranch = execSync('git rev-parse --abbrev-ref HEAD', {cwd: join(REPOS, name)}).toString().trim()
   results[name].compare = `pino ${branch} <–> ${name} ${repoBranch} `
   console.log(`${name} is on ${repoBranch}, reinstalling dependencies`)
   const removeModules = spawn('rm', ['-fr', 'node_modules'], {cwd: join(REPOS, name), stdio: 'ignore'})
@@ -76,17 +76,12 @@ async function check (name, url) {
     return
   }
   console.log(`${name} dependencies reinstalled, linking pino ${branch}`)
-  const link = spawn('npm', ['link', join(REPOS, 'pino')], {cwd: join(REPOS, name), stdio: 'ignore'})
-  const linked = await once(link, 'close') === 0
+  const link = spawnSync('npm', ['link', join(REPOS, 'pino')], {cwd: join(REPOS, name), stdio: 'ignore'})
+  const linked = link.status === 0
   if (linked === false) {
-    console.log(`${name} linking to pino ${branch} failed, attemping file ref install`)
-    const fileInstall = spawn('npm', ['install', join(REPOS, 'pino')], {cwd: join(REPOS, name), stdio: 'ignore'})
-    const fileInstalled = await once(fileInstall, 'close') === 0
-    if (fileInstall === false) {
-      console.error(`Fail: ${name} could not link/install from pino ${branch}!`)
-      process.exitCode = 1
-      return
-    }
+    console.error(`Fail: ${name} could not link pino ${branch}!`)
+    process.exitCode = 1
+    return
   }
   console.log(`${name} linked to pino ${branch} running tests to check integration`)
   const integration = spawn('npm', ['test'], {cwd: join(REPOS, name), stdio: 'ignore'})
