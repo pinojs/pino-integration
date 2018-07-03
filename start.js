@@ -17,8 +17,8 @@ const results = peers.reduce((o, {name}) => Object.assign({
 }, o), {})
 var count = peers.length
 const values = Object.values || ((o) => Object.keys(o).map((k) => o[k]))
-peers.forEach(async ({name, url}) => {
-  await check(name, url)
+peers.forEach(async ({name, url, divergent}) => {
+  await check(name, url, divergent)
   count--
   if (count === 0) {
     const table = values(results).map(({library, current, branch, compare}) => ({
@@ -31,7 +31,7 @@ peers.forEach(async ({name, url}) => {
     console.log(print(table))
   }
 })
-async function check (name, url) {
+async function check (name, url, divergent) {
   console.log(`cloning ${name} repository`)
   const clone = spawn('git', ['clone', url])
   const cloneSuccess = ~~(await once(clone, 'close')) === 0
@@ -49,7 +49,8 @@ async function check (name, url) {
     return
   }
   console.log(`${name} dependencies installed, running current tests`)
-  const test = spawn('npm', ['test'], {cwd: join(REPOS, name), stdio: 'ignore'})
+
+  const test = spawn('npm', divergent ? ['test'] : ['test', '--', '--timeout=0'], {cwd: join(REPOS, name), stdio: 'inherit'})
   const tested = ~~(await once(test, 'close')) === 0
   if (tested === false) {
     console.error(`Fail: ${name} failed current test!`)
@@ -88,7 +89,7 @@ async function check (name, url) {
     return
   }
   console.log(`${name} linked to pino ${branch} running tests to check integration`)
-  const integration = spawn('npm', ['test'], {cwd: join(REPOS, name), stdio: 'ignore'})
+  const integration = spawn('npm', divergent ? ['test'] : ['test', '--', '--timeout=0'], {cwd: join(REPOS, name), stdio: 'inherit'})
   const integrated = ~~(await once(integration,'close')) === 0
   if (integrated === false) {
     console.error(`Fail: ${name} failed integration test!`)

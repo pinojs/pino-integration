@@ -47,7 +47,8 @@ const peers =  [
   },
   {
     name: 'pino-socket',
-    url: 'https://github.com/pinojs/pino-socket'
+    url: 'https://github.com/pinojs/pino-socket',
+    divergent: true
   },
   {
     name: 'pino-http',
@@ -56,7 +57,8 @@ const peers =  [
   {
     name: 'hapi-pino',
     url: 'https://github.com/pinojs/hapi-pino',
-    minNodeVersion: 8
+    minNodeVersion: 8,
+    divergent: true
   },
   {
     name: 'pino-std-serializers',
