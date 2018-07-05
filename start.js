@@ -42,11 +42,13 @@ async function setup ({name, url, divergent}) {
   }
   console.log(`${name} cloned, installing dependencies`)
   const ping = setInterval(() => process.stdout.write(Buffer.from([0])), 2000) // keep travis alive
-  const install = spawn('npm', ['install'], {cwd: join(REPOS, name), stdio: 'ignore'})
+  const install = spawn('npm', ['install'], {cwd: join(REPOS, name), stdio: ['ignore', 'ignore', 'pipe']})
+  var installErrs = '  '
+  install.stderr.on('data', (chunk) => installErrs += '  ' + chunk)
   const installed = ~~(await once(install, 'close')) === 0
   clearInterval(ping)
   if (installed === false) {
-    console.error(`Fail: ${name} unable to install dependencies`)
+    console.error(`Fail: ${name} unable to install dependencies\n${installErrs}`)
     process.exitCode = 1
     return {name, divergent, fail: true}
   }
